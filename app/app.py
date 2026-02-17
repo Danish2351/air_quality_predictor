@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv()
-HOPSWORK_API_KEY = os.getenv("HOPSWORK_API_KEY")
+HOPSWORK_API_KEY = os.environ.get("HOPSWORK_API_KEY")
 
 # --- Page Config ---
 # Set the title and layout of the Streamlit dashboard

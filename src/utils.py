@@ -8,7 +8,7 @@ from dotenv import load_dotenv, find_dotenv
 import hopsworks
 
 load_dotenv(find_dotenv())
-HOPSWORK_API_KEY=os.getenv("HOPSWORK_API_KEY")
+HOPSWORK_API_KEY=os.environ.get("HOPSWORK_API_KEY")
 
 
 def get_aqi_data(lat, lon, start, end):
