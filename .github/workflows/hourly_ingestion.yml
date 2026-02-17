@@ -1,0 +1,29 @@
+name: Hourly Data Ingestion
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs at the start of every hour
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  run-ingestion:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Data Ingestion Script
+        env:
+          HOPSWORK_API_KEY: ${{ secrets.HOPSWORK_API_KEY }}
+        run: python -m src.data_ingestion
