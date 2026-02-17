@@ -1,9 +1,0 @@
-numpy
-scikit-learn
-python-dotenv
-requests
-joblib
-streamlit
-matplotlib
-pandas>=1.3.0,<2.4.0
-hopsworks==4.7.2
