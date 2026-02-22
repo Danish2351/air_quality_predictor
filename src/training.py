@@ -31,41 +31,8 @@ def train_model():
         print(f"Error: Feature Group 'aqi_features' not found. Data ingestion must run first. {e}")
         return
 
-    # Create/Retrieve Feature View
-    # We want valid features for prediction
-    # Features: year, month, day, hour, day_of_week, weekend, lag features, rolling means.
-    # Target: aqi
-    # PK: timestamp (we will exclude from training)
-    # Time: time (we will exclude from training)
-
-    # 4. create training data
-    # Using a simple train_test_split on the retrieved pandas dataframe for simplicity here
-    # Alternatively, create_training_data() could materialise a dataset in Hopsworks
-    
-    # Retrieve all data (offline store)
-    # Using read() on feature view or fg
-    # For a robust production pipeline, feature_view.train_test_split is better but requires storage connector setup sometimes.
-    # We'll use feature_view.get_batch_data() or query.read() and split locally for simplicity in this script.
-    
-    # Actually, let's use feature_view.training_data() if possible, or just read via query which is simpler for this scale.
-    # feature_view.training_data requires setting up a storage connector for caching usually.
-    # Let's stick to reading the dataframe directly from the Feature Group query for now to minimize infra setup errors for the user.
-    # But ideally we use feature_view to ensure consistency.
-    
-    
-    # Let's read from the Feature Group directly to get everything including label
-    # (Feature View is best practice for serving, but for this simple training script direct read is safer if FV setup is complex)
-    # Wait, existing `utils.data_cleaning` returns all columns.
-    
-    # Let's use `feature_view.get_training_data(1)` which splits in-memory if no storage connector specified?
-    # Hopsworks `get_training_data` usually requires a storage connector or extensive setup.
-    # Simple approach: Read FG, split locally.
     
     print("Reading data from Feature Store...")
-    # Use offline=False to get latest if offline job failed? No, offline is better for volume.
-    # But given our previous issues with Offline Materialization, we should probably read ONLINE if offline is empty.
-    
-
     df = fg.read(online=True)
 
     if df.empty:

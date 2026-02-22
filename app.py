@@ -5,7 +5,8 @@ import hopsworks
 import joblib
 import os
 import matplotlib.pyplot as plt
-from datetime import datetime, timedelta, time
+import time
+from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv()
@@ -49,7 +50,7 @@ def get_best_model(project):
     # List of models to check in the registry
     model_names = ["random_forest_aqi_model", "gradient_boosting_aqi_model", "ridge_aqi_model"]
     
-    best_r2 = -float('inf')
+    best_mape = float('inf')
     best_model_meta = None
     best_model_name = ""
     models_data = []
@@ -64,9 +65,9 @@ def get_best_model(project):
             # Sort by version (descending) to get the latest version
             model = sorted(models, key=lambda m: m.version, reverse=True)[0]
             
-            # Extract training metrics (R2, RMSE, MAE)
+            # Extract training metrics (R2, RMSE, MAE, MAPE)
             metrics = model.training_metrics
-            r2 = metrics.get("R2", -1)
+            mape = metrics.get("MAPE", 999)
             
             # Append metrics to list for display
             models_data.append({
@@ -74,13 +75,13 @@ def get_best_model(project):
                 "Version": model.version,
                 "RMSE": metrics.get("RMSE", 999),
                 "MAE": metrics.get("MAE", 999),
-                "MAPE": metrics.get("MAPE", 999),
-                "R2": r2
+                "MAPE": mape,
+                "R2": metrics.get("R2", -1)
             })
             
-            # Check if this model is the best so far
-            if r2 > best_r2:
-                best_r2 = r2
+            # Check if this model is the best so far (Lowest MAPE)
+            if mape < best_mape:
+                best_mape = mape
                 best_model_meta = model
                 best_model_name = name
         except Exception as e:
@@ -113,7 +114,6 @@ def fetch_data_from_store(project, days_past=14):
         st.warning(f"Feature Store Online retrieval failed: {e}")
         st.write("Retrying in 2 seconds...")
         time.sleep(2)
-
     try:
         df = fg.read(online=True)
         print("data retrieved successfully")
@@ -231,7 +231,7 @@ except:
 # 1. Models
 st.header("1. Model Registry")
 df_metrics, best_model_meta, best_model_name = get_best_model(project)
-st.dataframe(df_metrics.style.highlight_max(color='green', axis=0, subset=['R2']))
+st.dataframe(df_metrics.style.highlight_min(color='green', axis=0, subset=['MAPE']))
 st.success(f"Selected: **{best_model_name}**")
 
 # 2. Logic
