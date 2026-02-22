@@ -5,7 +5,7 @@ import hopsworks
 import joblib
 import os
 import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv()
@@ -105,6 +105,14 @@ def fetch_data_from_store(project, days_past=14):
     # Read data from the Feature Group
     # Try reading from Online Store first (low latency), fallback to Offline
     # Try reading from Online Store first (low latency)
+    try:
+        df = fg.read(online=True)
+        print("data retrieved successfully")
+    except Exception as e:
+        st.warning(f"Feature Store Online retrieval failed: {e}")
+        st.write("Retrying in 2 seconds...")
+        time.sleep(2)
+
     try:
         df = fg.read(online=True)
         print("data retrieved successfully")
