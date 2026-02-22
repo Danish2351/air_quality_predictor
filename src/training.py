@@ -135,7 +135,7 @@ def train_model():
     y_pred = random_forest_model.predict(X_test)
     rmse = root_mean_squared_error(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
-    mape = mean_absolute_percentage_error(y_test, y_pred)*100
+    mape = mean_absolute_percentage_error(y_test, y_pred) * 100
     r2 = r2_score(y_test, y_pred)
     
     print(f"Random Forest Regressor Model Evaluation - RMSE: {rmse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.4f}, R2: {r2:.4f}")
@@ -182,7 +182,7 @@ def train_model():
     y_pred = gradient_boosting_model.predict(X_test)
     rmse = root_mean_squared_error(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
-    mape = mean_absolute_percentage_error(y_test, y_pred)*100
+    mape = mean_absolute_percentage_error(y_test, y_pred) * 100
     r2 = r2_score(y_test, y_pred)
     
     print(f"Gradient Boosting Regressor Model Evaluation - RMSE: {rmse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.4f}, R2: {r2:.4f}")
@@ -219,7 +219,7 @@ def train_model():
     y_pred = ridge_model.predict(X_test)
     rmse = root_mean_squared_error(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
-    mape = mean_absolute_percentage_error(y_test, y_pred)*100
+    mape = mean_absolute_percentage_error(y_test, y_pred) * 100
     r2 = r2_score(y_test, y_pred)
     
     print(f"Ridge Regressor Model Evaluation - RMSE: {rmse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.4f}, R2: {r2:.4f}")

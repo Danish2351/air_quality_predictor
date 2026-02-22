@@ -74,6 +74,7 @@ def get_best_model(project):
                 "Version": model.version,
                 "RMSE": metrics.get("RMSE", 999),
                 "MAE": metrics.get("MAE", 999),
+                "MAPE": metrics.get("MAPE", 999),
                 "R2": r2
             })
             
