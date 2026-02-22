@@ -16,8 +16,7 @@ HOPSWORK_API_KEY = os.environ.get("HOPSWORK_API_KEY")
 # Set the title and layout of the Streamlit dashboard
 st.set_page_config(page_title="AQI Predictor Dashboard", layout="wide")
 
-st.title("🏭 Air Quality Index (AQI) Predictor")
-st.write("Visualizing AQI Forecasts using Hopsworks Feature Store & Model Registry.")
+st.title("🏭 Karachi Air Quality Index Predictor")
 
 # --- Helper Functions ---
 
@@ -111,8 +110,8 @@ def fetch_data_from_store(project, days_past=14):
         df = fg.read(online=True)
         print("data retrieved successfully")
     except Exception as e:
-        st.warning(f"Feature Store Online retrieval failed: {e}")
-        st.write("Retrying in 2 seconds...")
+        st.sidebar.error(f"Feature Store Online retrieval failed: {e}")
+        st.sidebar.write("Retrying in 2 seconds...")
         time.sleep(2)
     try:
         df = fg.read(online=True)
@@ -220,6 +219,23 @@ def predict_next_3_days(model, df_lagged):
         df_lagged = pd.concat([df_lagged, pd.DataFrame([new_row])], ignore_index=True)
         
     return pd.DataFrame({'Date': future_dates, 'Predicted AQI': future_preds}), df_lagged
+def get_aqi_health_advice(aqi):
+    """
+    Returns health category, color, and recommendation based on AQI value.
+    """
+    if aqi <= 50:
+        return "Good", "green", "Air quality is satisfactory, and air pollution poses little or no risk."
+    elif aqi <= 100:
+        return "Moderate", "yellow", "Air quality is acceptable. However, there may be a risk for some people, particularly those who are unusually sensitive to air pollution."
+    elif aqi <= 150:
+        return "Unhealthy for Sensitive Groups", "orange", "Members of sensitive groups may experience health effects. The general public is less likely to be affected."
+    elif aqi <= 200:
+        return "Unhealthy", "red", "Some members of the general public may experience health effects; members of sensitive groups may experience more serious health effects."
+    elif aqi <= 300:
+        return "Very Unhealthy", "purple", "Health alert: The risk of health effects is increased for everyone."
+    else:
+        return "Hazardous", "maroon", "Health warning of emergency conditions: everyone is more likely to be affected."
+
 # --- Main App ---
 
 try:
@@ -229,38 +245,46 @@ except:
     st.stop()
 
 # 1. Models
-st.header("1. Model Registry")
 df_metrics, best_model_meta, best_model_name = get_best_model(project)
-st.dataframe(df_metrics.style.highlight_min(color='green', axis=0, subset=['MAPE']))
-st.success(f"Selected: **{best_model_name}**")
 
 # 2. Logic
 if best_model_meta:
-    with st.spinner("Initializing Forecast..."):
-        # Download Load Model
-        model_dir = best_model_meta.download()
+        # Download & Load Model
+        # We use overwrite=True to ensure we get the latest from the registry/cloud
+        try:
+            model_dir = best_model_meta.download(overwrite=True)
+        except:
+            model_dir = best_model_meta.download()
+            
         filename_map = {
             "random_forest_aqi_model": "random_forest_model.pkl",
             "gradient_boosting_aqi_model": "gradient_boosting_model.pkl",
             "ridge_aqi_model": "ridge_model.pkl"
         }
         fname = filename_map.get(best_model_name, "model.pkl")
-        try:
-            model = joblib.load(os.path.join(model_dir, fname))
-        except:
-             model = joblib.load(os.path.join(model_dir, "model.pkl"))
+        
+        # Priority 1: Specifically named file
+        # Priority 2: Generic model.pkl
+        # Priority 3: First pkl file in directory
+        model_path = os.path.join(model_dir, fname)
+        if not os.path.exists(model_path):
+            model_path = os.path.join(model_dir, "model.pkl")
+            
+        if not os.path.exists(model_path):
+            pkl_files = [f for f in os.listdir(model_dir) if f.endswith('.pkl')]
+            if pkl_files:
+                model_path = os.path.join(model_dir, pkl_files[0])
+        
+        model = joblib.load(model_path)
 
         # Fetch History
         df_hist = fetch_data_from_store(project)
         
         if df_hist is not None:
              # Predict
-             st.subheader("2. 3-Day Forecast")
              df_forecast, df_combined = predict_next_3_days(model, df_hist)
              
-             st.table(df_forecast)
-             
-             # Plot
+             # 1. Trends
              st.subheader("Trends")
              fig, ax = plt.subplots(figsize=(12,4))
              
@@ -276,6 +300,32 @@ if best_model_meta:
              ax.legend()
              ax.grid(True, alpha=0.5)
              st.pyplot(fig)
+
+             # 2. Forecast
+             st.subheader("Forecast")
+             st.dataframe(df_forecast, hide_index=True)
+
+             # 3. Health Recommendations
+             st.subheader("Recommendations")
+             cols_rec = st.columns(3)
+             for idx, row in df_forecast.iterrows():
+                 category, color, advice = get_aqi_health_advice(row['Predicted AQI'])
+                 with cols_rec[idx]:
+                     st.markdown(f"""
+                     <div style="padding:10px; border-radius:5px; text-align:center;">
+                     {row['Date']}
+                     </div>
+                     <div style="padding:10px; border-radius:5px; color:{color}; font-weight:bold; text-align:center;">
+                         {category} ({row['Predicted AQI']:.2f})
+                     </div>
+                     <p style="font-size:0.9rem; margin-top:5px; text-align:center;">{advice}</p>
+                     """, unsafe_allow_html=True)
+
+             # 4. Model Performance (at the bottom)
+             st.divider()
+             st.subheader("Model Performance")
+             st.dataframe(df_metrics.style.highlight_min(color='green', axis=0, subset=['MAPE']), hide_index=True)
+             st.success(f"Selected: **{best_model_name}**")
              
         else:
             st.error("No historical data found in Feature Store.")
