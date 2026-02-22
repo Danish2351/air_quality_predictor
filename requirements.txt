@@ -5,3 +5,4 @@ numpy
 pandas>=1.3.0,<2.4.0
 python-dotenv
 streamlit
+scikit-learn==1.5.1
