@@ -55,7 +55,7 @@ def data_cleaning(raw_json):
 
 def get_feature_group(name="aqi_features", version=1):
     project = hopsworks.login(
-        project='air_quality_predictor',
+        project='sdk_new_project',
         host="eu-west.cloud.hopsworks.ai",
         port=443,
         api_key_value=HOPSWORK_API_KEY

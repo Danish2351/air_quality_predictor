@@ -12,7 +12,7 @@ load_dotenv()
 
 lat="24.8546842"
 lon="67.0207055" 
-start_time="2025-08-01T00:00"
+start_time="2025-07-01T00:00"
 time = datetime.now()
 end_time = time.strftime("%Y-%m-%dT%H:%M")
 

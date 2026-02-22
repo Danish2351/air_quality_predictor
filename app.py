@@ -26,13 +26,18 @@ def get_hopsworks_project():
     Connect to Hopsworks Project.
     Uses @st.cache_resource to cache the connection object and avoid reconnecting on every rerun.
     """
-    project = hopsworks.login(
-        project='air_quality_predictor',
-        host="eu-west.cloud.hopsworks.ai",
-        port=443,
-        api_key_value=HOPSWORK_API_KEY
-    )
-    return project
+    try:
+        project = hopsworks.login(
+            project='sdk_new_project',
+            host="eu-west.cloud.hopsworks.ai",
+            port=443,
+            api_key_value=HOPSWORK_API_KEY
+        )
+        print("connected to hopsworks")
+        return project
+    except Exception as e:
+        st.error(f"Error connecting to Hopsworks: {e}")
+        return None
 
 def get_best_model(project):
     """
@@ -157,6 +162,7 @@ def predict_next_3_days(model, df_lagged):
     for i in range(1, 4): # 1, 2, 3
         # Look at the LAST row of the CURRENT df_lagged (which includes predictions from previous steps)
         last_row = df_lagged.iloc[-1]
+        second_last_row = df_lagged.iloc[-2]
         
         # Date for prediction
         next_date = last_row['date'] + timedelta(days=1)
@@ -169,22 +175,21 @@ def predict_next_3_days(model, df_lagged):
             'day': next_date.day,
             'day_of_week': next_date.weekday(),
             'weekend': 1 if next_date.weekday() >= 5 else 0,
-            
-            'aqi_lag1': last_row['aqi'],
-            'pm2_5_lag1': last_row['pm2_5'],
             'pm10_lag1': last_row['pm10'],
             'nitrogen_dioxide_lag1': last_row['nitrogen_dioxide'],
             'ozone_lag1': last_row['ozone'],
             'sulphur_dioxide_lag1': last_row['sulphur_dioxide'],
-            'carbon_monoxide_lag1': last_row['carbon_monoxide']
+            'aqi_lag2': second_last_row['aqi'],
+            'pm2_5_lag2': second_last_row['pm2_5'],
+            'ozone_lag2': second_last_row['ozone'],
         }
         
         # Create DataFrame for Model
         # Ensure order matches training: ['year', 'month', 'day', 'day_of_week', 'weekend', 'aqi_lag1', ... ]
         feature_order = [
             'year', 'month', 'day', 'day_of_week', 'weekend',
-            'aqi_lag1', 'pm2_5_lag1', 'pm10_lag1', 'nitrogen_dioxide_lag1',
-            'ozone_lag1', 'sulphur_dioxide_lag1', 'carbon_monoxide_lag1'
+            'pm10_lag1', 'nitrogen_dioxide_lag1',
+            'ozone_lag1', 'sulphur_dioxide_lag1', 'aqi_lag2', 'pm2_5_lag2', 'ozone_lag2'
         ]
         
         X_test = pd.DataFrame([features])[feature_order]

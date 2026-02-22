@@ -16,7 +16,7 @@ def train_model():
     
     # 1. Connect to Hopsworks
     project = hopsworks.login(
-        project='air_quality_predictor',
+        project='sdk_new_project',
         host="eu-west.cloud.hopsworks.ai",
         port=443,
         api_key_value=utils.HOPSWORK_API_KEY
@@ -86,6 +86,9 @@ def train_model():
     ]
     for col in cols:
         daily_aqi[f'{col}_lag1'] = daily_aqi[col].shift(1)
+
+    for col in cols:
+        daily_aqi[f'{col}_lag2'] = daily_aqi[col].shift(2)
         
     df_lagged=daily_aqi.dropna()
     df_lagged=df_lagged.drop(columns=["pm2_5","pm10","nitrogen_dioxide","ozone","sulphur_dioxide","carbon_monoxide"])
@@ -104,7 +107,7 @@ def train_model():
     # The model works best with numeric features only.
     if 'aqi' in df.columns:
         y = df_lagged['aqi']
-        X = df_lagged.drop(columns=['aqi'])
+        X = df_lagged.drop(columns=["aqi","aqi_lag1","carbon_monoxide_lag1","pm2_5_lag1","sulphur_dioxide_lag2","nitrogen_dioxide_lag2","carbon_monoxide_lag2","pm10_lag2"])
 
     else:
         print("Target column 'aqi' not found!")
