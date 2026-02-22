@@ -8,11 +8,11 @@ load_dotenv()
 lat = "24.8546842"
 lon = "67.0207055"
 
-# Calculate time range: last hour to current hour
+# Calculate time range: future +5 hours
 current_time = datetime.now()
-# We want the last completed hour, so we look back 1 hour
-start_time = current_time.strftime("%Y-%m-%dT%H:%M")
-end_time = current_time.strftime("%Y-%m-%dT%H:%M")
+future_time = current_time + timedelta(hours=5) # gmt+5 for github actions
+start_time = future_time.strftime("%Y-%m-%dT%H:%M")
+end_time = future_time.strftime("%Y-%m-%dT%H:%M")
 
 print(f"Fetching data from {start_time} to {end_time}...")
 raw_json = utils.get_aqi_data(lat, lon, start_time, end_time)
