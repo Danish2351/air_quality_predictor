@@ -291,6 +291,7 @@ if best_model_meta:
              # Combined DF has history + predictions
              # Plot History
              today = datetime.now().date()
+             today = today + timedelta(hours=5)
              history = df_combined[df_combined['date'] <= today].tail(7)
              forecast = df_combined[df_combined['date'] >= today]
              
