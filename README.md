@@ -2,6 +2,8 @@
 
 This project is a **100% serverless** end-to-end AQI prediction service that provides 3-day air quality forecasts for **Karachi, Pakistan**. It leverages automated data pipelines and machine learning to maintain a continuous cycle of hourly data ingestion and daily model retraining.
 
+* **Live App**: [air-quality-predictor-project.streamlit.app](https://air-quality-predictor-project.streamlit.app/) 
+
 ## Architecture Diagram
 The following diagram illustrates the data flow from the Open Meteo API through feature engineering, automated training, and final deployment.
 
@@ -42,7 +44,6 @@ The following diagram illustrates the data flow from the Open Meteo API through 
 ### D. Deployment
 * A user-friendly dashboard displays real-time and forecasted pollutant levels.
 * The application is hosted on Streamlit Cloud using a GitHub repository.
-* **Live App**: [air-quality-predictor-project.streamlit.app](https://air-quality-predictor-project.streamlit.app/) 
 
 ---
 
@@ -50,10 +51,3 @@ The following diagram illustrates the data flow from the Open Meteo API through 
 
 ![Dashboard1](/dashboard_screenshot_1.png)
 ![Dashboard2](/dashboard_screenshot_2.png)
----
-
-
-## Future Improvements
-* Optimize features and model tuning to reduce overfitting.
-* Implement automated hazardous AQI alerts for user safety.
-* Integrate additional data sources to improve predictive power.
